@@ -1,10 +1,15 @@
 #!/bin/bash
 
-test ! -d $HOME/.vnc &&  mkdir -p $HOME/.vnc
+
 
 VNCPASS=$(echo $RANDOM | md5sum | tr -d -- -)
+
+test ! -d $HOME/.vnc &&  mkdir -p $HOME/.vnc
 echo "$VNCPASS" | vncpasswd -f > $HOME/.vnc/passwd
 chmod 600 $HOME/.vnc/passwd
+
+echo $(VNCPASS)
+
 
 VNCDISPLAY=$(($(id -u) + 1000))
 export DISPLAY=":$VNCDISPLAY"
@@ -19,12 +24,13 @@ chmod +x $HOME/.vnc/xstartup
 
 vncserver -kill :$VNCDISPLAY &>/dev/null
 rm -fv $HOME/.vnc/*.{log,pid} $HOME/.ICEauthority $HOME/.Xauthority /tmp/.X$VNCDISPLAY-lock /tmp/.X11-unix/X$VNCDISPLAY
-
+#Esta linea es para que no aparezca una pantalla gris con negro en lugar del escritorio
 
 WEBVNC=$((8900+$VNCDISPLAY)) #Se crea la variable para el websocket (con el id de usuario se crea el puerto del socket)
 VNCSERVER=$((5900+$VNCDISPLAY)) #Se crea tambien el puerto del servidor donde se aloja el servidor
-vncserver :$VNCDISPLAY -desktop "Desktop $USER"  -localhost  \
+vncserver :$VNCDISPLAY  \
 
+<< 'Comment' 
 echo "[Unit]
 Description=Start TightVNC server at startup
 After=syslog.target network.target
@@ -43,10 +49,10 @@ ExecStop=/usr/bin/vncserver -kill :%i
 [Install]
 WantedBy=multi-user.target
 " > /etc/systemd/system/vncserver@.service
-
+Comment
 echo $?
 sleep 5s
-pgrep -lf tigervnc -u $USER  #pgrep sirve para mostrar el id de un proceso, con -lf se muestra el nombre con el pid
+pgrep -lf tightvnc -u $USER  #pgrep sirve para mostrar el id de un proceso, con -lf se muestra el nombre con el pid
 # y las coincidencias de la linea de comandos, en este caso elproceso es tigervnc -u  del usuario
 if [ $? -gt 0 ]; then  #Si no existe el directorio $HOME/.vnc mandara el error
 echo "
@@ -63,18 +69,17 @@ pstree -u $USER   #Muestra los procesos del usuario como un arbol, con -u se mue
 #de los procesos
 
 fi
-echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-URL para conexión de usuario $USER:
 
-Se recomienda ejecutar dentro de una sesión \"screen\" o \"tmux\".
-
-Para terminar la sesión VNC presionar Ctrl+C.
-
-https://172.27.43.121:$WEBVNC/vnc.html/$SLURM_JOBID/$USER/$(hostname -i)/$WEBVNC/$VNCPASS
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-
-webpath=$(which websockify)
-
-$webpath $WEBVNC 127.0.0.1:$VNCSERVER
+websockify -D --web=/usr/share/novnc/ $WEBVNC localhost:$VNCSERVER
 #Se busca el programa websockify para redirigir el puerto VNCSERVER al socket WEBVNC
+
+echo "Para detener el servidor ejecutar:
+
+vncserver -kill: $VNCDISPLAY
+
+kill (PID del deamon: ps aux | grep "websockify")
+"
+ps aux | grep "websockify"
+
+
+xrdb $HOME/.Xresources
