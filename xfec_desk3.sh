@@ -25,7 +25,7 @@ rm -fv $HOME/.vnc/*.{log,pid} $HOME/.ICEauthority $HOME/.Xauthority /tmp/.X$VNCD
 WEBVNC=$((8900+$VNCDISPLAY)) #Se crea la variable para el websocket (con el id de usuario se crea el puerto del socket)
 VNCSERVER=$((5900+$VNCDISPLAY)) #Se crea tambien el puerto del servidor donde se aloja el servidor
 vncserver :$VNCDISPLAY -desktop "Desktop $USER" -localhost -AlwaysShared -AcceptKeyEvents \
-   -AcceptPointerEvents -AcceptSetDesktopSize -SendCutText -AcceptCutText -autokill
+   -AcceptPointerEvents -AcceptSetDesktopSize -SendCutText -AcceptCutText
 
 
 << 'Comment' 
