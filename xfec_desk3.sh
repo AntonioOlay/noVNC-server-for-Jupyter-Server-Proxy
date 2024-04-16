@@ -10,6 +10,10 @@ chmod 600 $HOME/.vnc/passwd
 VNCDISPLAY=$(($(id -u) + 1000))
 export DISPLAY=":$VNCDISPLAY"
 
+
+echo $VNCDISPLAY
+
+
 mv ~/.vnc/xstartup ~/.vnc/xstartup.bak
 
 echo "#!/bin/bash
@@ -25,7 +29,7 @@ rm -fv $HOME/.vnc/*.{log,pid} $HOME/.ICEauthority $HOME/.Xauthority /tmp/.X$VNCD
 WEBVNC=$((8900+$VNCDISPLAY)) #Se crea la variable para el websocket (con el id de usuario se crea el puerto del socket)
 VNCSERVER=$((5900+$VNCDISPLAY)) #Se crea tambien el puerto del servidor donde se aloja el servidor
 vncserver :$VNCDISPLAY -desktop "Desktop $USER" -localhost -AlwaysShared -AcceptKeyEvents \
-   -AcceptPointerEvents -AcceptSetDesktopSize -SendCutText -AcceptCutText
+   -AcceptPointerEvents -AcceptSetDesktopSize -SendCutText -AcceptCutText -SecurityTypes None
 
 
 << 'Comment' 
